@@ -20,6 +20,7 @@ class ConllxDf:
     @staticmethod
     def get_conllu_header() -> List[str]:
         """return the column headers based on CoNLL-U.
+
         Returns:
             List[str]: a list of column names
         """
@@ -27,6 +28,7 @@ class ConllxDf:
     
     def __init_conllx_df(self) -> DataFrame:
         """Initializes the class variable df as a DataFrame of all trees.
+
         Returns:
             DataFrame: the given conll file trees
         """
@@ -50,6 +52,7 @@ class ConllxDf:
         Each list represents the comments of the given tree.
         
         An empty list represents a tree with no comments.
+
         Returns:
             List[List[str]]: a list of lists of comments
         """
@@ -79,12 +82,14 @@ class ConllxDf:
     def get_df_by_id(self, df_number: int) -> Union[DataFrame, None]:
         """Given a tree number, return the corresponding df.
         The number must be between [0,len(conllx_df)), otherwise None is returned.
+
         Note: the tree is extracted from a DataFrame containing all trees,
         and so the index column will contain a range with respect to
         the full DataFrame. The index column is not related to the tree data.
         
         Args:
             df_number (int): tree number
+
         Returns:
             Union[DataFrame, None]: a DataFrame or None.
         """
@@ -102,6 +107,12 @@ class ConllxDf:
     
     def get_sentence_count(self):
         return self.df[self.df['ID'] == 1].index.shape[0]
+    
+    def get_texts(self) -> List[str]:
+        return [s[0].split(" = ")[1] for s in self.comments]
+    
+    def get_texts_tokens(self) -> List[str]:
+        return [s[1].split(" = ")[1] for s in self.comments]
     
     @property
     def df(self) -> DataFrame:
