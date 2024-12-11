@@ -5,7 +5,7 @@ from src.conll_utils import get_token_details, get_sentence_column_data, get_chi
 
 
 if __name__ == '__main__':
-    conll_file = "./sample.conllx"
+    conll_file = "./data/sample.conllx"
     conll_df = ConllxDf(conll_file)
     
     # see full conll file:
