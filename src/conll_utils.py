@@ -112,3 +112,14 @@ def add_direction(child: SentenceToken):
 def get_token_count(sen_df):
     import pdb; pdb.set_trace()
     return sen_df.shape[0]
+
+def get_tree_column(conllx, sentence_number, column_name):
+    sen_df = conllx.get_df_by_id(sentence_number)
+    return get_sentence_column_data(sen_df, column_name)
+
+def get_sentence_form_column(conllx, sentence_number):
+    return ' '.join(get_tree_column(conllx, sentence_number, 'FORM'))
+
+def get_all_sentence_form_columns(conllx):
+    sen_count = conllx.get_sentence_count()
+    return [get_sentence_form_column(conllx, sen) for sen in range(sen_count)]

@@ -1,3 +1,4 @@
+from pathlib import Path
 import re
 from typing import List, Union
 
@@ -74,9 +75,14 @@ class ConllxDf:
                 temp_list.append(line)
         return final_list
     
-    # TODO
-    # def write(self):
-        # update self.data using df and comments
+    def write(self, new_location):
+        new_file_name = f"enriched_{Path(self.file_path).name}"
+        with open(f"{new_location}/{new_file_name}", 'w') as f:
+            for sen_idx in range(self.get_sentence_count()):
+                sen_df = self.get_df_by_id(sen_idx)
+                [f.write(f"{comm}\n") for comm in self.comments[sen_idx]]
+                f.write(sen_df.to_csv(sep='\t', index=False, header=False))
+                f.write('\n')
         
     
     def get_df_by_id(self, df_number: int) -> Union[DataFrame, None]:
@@ -104,6 +110,9 @@ class ConllxDf:
             return self.df.loc[ids[df_number]:self.df.tail(1).index[0]]
         # remaining df's
         return self.df.loc[ids[df_number]:(ids[df_number+1]-1)]
+    
+    def get_comments_by_id(self, sentence_number):
+        return self.comments[sentence_number]
     
     def get_sentence_count(self):
         return self.df[self.df['ID'] == 1].index.shape[0]
