@@ -110,7 +110,6 @@ def add_direction(child: SentenceToken):
     child.direction = 'P-C' if child.parent_id < child.token_id else 'C-P'
 
 def get_token_count(sen_df):
-    import pdb; pdb.set_trace()
     return sen_df.shape[0]
 
 def get_tree_column(conllx, sentence_number, column_name):
