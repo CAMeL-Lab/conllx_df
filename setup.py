@@ -20,7 +20,7 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    packages=['src.conllx_df', 'src.conll_utils'],
+    packages=find_packages(exclude=["tests"]),
     python_requires=">=3.6",
     install_requires=[
         "pandas>=2.2.0",
