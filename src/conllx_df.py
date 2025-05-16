@@ -6,7 +6,7 @@ import pandas as pd
 from pandas import DataFrame
     
 class ConllxDf:
-    def __init__(self, file_path='', data=None):
+    def __init__(self, file_path='', data=None, header='conllu'):
         self.file_path = file_path
         self.data = data
         if not data:
@@ -15,19 +15,28 @@ class ConllxDf:
         # remove special character \ufeff, if file starts with it (it causes errors)
         self.data: str = self.data.replace('\ufeff', '')
 
-        self._df: DataFrame = self.__init_conllx_df()
+        self._df: DataFrame = self.__init_conllx_df(header=header)
         self._comments: List[List[str]] = self.__init_list_of_comments()
         
     @staticmethod
     def get_conllu_header() -> List[str]:
-        """return the column headers based on CoNLL-U.
+        """return the column header based on CoNLL-U.
 
         Returns:
             List[str]: a list of column names
         """
         return ['ID', 'FORM', 'LEMMA', 'UPOS', 'XPOS', 'FEATS', 'HEAD', 'DEPREL', 'DEPS', 'MISC']
+
+    @staticmethod
+    def get_catib_header() -> List[str]:
+        """return the column header based on the older CATiB format.
+
+        Returns:
+            List[str]: a list of column names
+        """
+        return ['ID', 'FORM', 'UPOS', 'HEAD', 'DEPREL', 'FEATS']
     
-    def __init_conllx_df(self) -> DataFrame:
+    def __init_conllx_df(self, header) -> DataFrame:
         """Initializes the class variable df as a DataFrame of all trees.
 
         Returns:
@@ -41,8 +50,18 @@ class ConllxDf:
         df = DataFrame(conll_rows)
         df = df[0].str.split('\t',expand=True)
         
-        # df now has 10 columns, name them (we assume the headers follow CoNLL-U)
-        df.columns = self.get_conllu_header()
+        if header == 'catib':
+            df.columns = self.get_catib_header()
+            df = self.catib_to_conllx(df)
+        elif header == 'conllu':
+            try:
+                df.columns = self.get_conllu_header()
+            except ValueError as e:
+                e.args += ("are you sure you are using the CoNLL-U header and not CATiB?",)
+                raise 
+        else:
+            assert False, f'invalid header type {header}'
+        
         # child and parent IDs are ints
         df[['ID', 'HEAD']] = df[['ID', 'HEAD']].apply(pd.to_numeric)
         return df
@@ -75,16 +94,37 @@ class ConllxDf:
                 temp_list.append(line)
         return final_list
     
-    def write(self, new_location):
-        new_file_name = f"enriched_{Path(self.file_path).name}"
-        with open(f"{new_location}/{new_file_name}", 'w') as f:
+    def write(self, out_path, new_file_name='', add_tree_tokens=False):
+        new_file_name = new_file_name if new_file_name else Path(self.file_path).name
+        with open(f"{out_path}/{new_file_name}", 'w') as f:
             for sen_idx in range(self.get_sentence_count()):
                 sen_df = self.get_df_by_id(sen_idx)
-                [f.write(f"{comm}\n") for comm in self.comments[sen_idx]]
+                if self.comments[sen_idx]:
+                    [f.write(f"{comm}\n") for comm in self.comments[sen_idx]]
+                if add_tree_tokens:
+                    tree_tokens = ' '.join(sen_df.FORM.tolist())
+                    f.write(f'# treeTokens = {tree_tokens}\n')
                 f.write(sen_df.to_csv(sep='\t', index=False, header=False))
                 f.write('\n')
-        
-    
+
+    @staticmethod   
+    def catib_to_conllx(df: DataFrame) -> DataFrame:
+        """Given a DataFrame of CATiB trees,
+        return the CoNLL-X equivalent
+
+        Args:
+            df (DataFrame): CATiB trees
+
+        Returns:
+            DataFrame: CoNLL-X trees
+        """
+        conllu_header = ConllxDf.get_conllu_header()
+        columns_to_add = list(set(conllu_header) - set(df.columns))
+        for col in columns_to_add:
+            df[col] = '_'
+        df = df[conllu_header]
+        return df
+
     def get_df_by_id(self, df_number: int) -> Union[DataFrame, None]:
         """Given a tree number, return the corresponding df.
         The number must be between [0,len(conllx_df)), otherwise None is returned.
