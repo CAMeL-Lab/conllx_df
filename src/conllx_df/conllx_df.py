@@ -87,7 +87,9 @@ class ConllxDf:
         final_list: List[List[str]] = []
         temp_list: List[str] = []
         for line in lines:
-            if line == '': # an empty string represents the end of comments of the given tree.
+            if line == '\n':
+                continue
+            elif line == '': # an empty string represents the end of comments of the given tree.
                 final_list.append(temp_list)
                 temp_list = []
             else:
