@@ -1,3 +1,4 @@
+import csv
 from pathlib import Path
 import re
 from typing import List, Union
@@ -106,7 +107,7 @@ class ConllxDf:
                 if add_tree_tokens:
                     tree_tokens = ' '.join(sen_df.FORM.tolist())
                     f.write(f'# treeTokens = {tree_tokens}\n')
-                f.write(sen_df.to_csv(sep='\t', index=False, header=False))
+                f.write(sen_df.to_csv(sep='\t', index=False, header=False, quoting=csv.QUOTE_NONE))
                 f.write('\n')
 
     @staticmethod   
