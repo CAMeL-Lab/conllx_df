@@ -157,6 +157,15 @@ class ConllxDf:
     def get_comments_by_id(self, sentence_number):
         return self.comments[sentence_number]
     
+    def get_text_line_by_id(self, sentence_number):
+        comments = self.comments[sentence_number]
+        
+        text_line: List[str] = [comment for comment in comments if comment.startswith('# text = ')]
+        
+        # removes '# text = '. If there is no text line then return an empty string
+        text_line: str = text_line[0].replace('# text = ','') if text_line else ''
+        return text_line
+    
     def get_sentence_count(self):
         return self.df[self.df['ID'] == 1].index.shape[0]
     
