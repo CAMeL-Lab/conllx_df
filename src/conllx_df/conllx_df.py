@@ -63,6 +63,8 @@ class ConllxDf:
         else:
             assert False, f'invalid header type {header}'
         
+        # remove right-to-left mark from the first column
+        df.ID = df.ID.str.replace('\u200e', '')
         # child and parent IDs are ints
         df[['ID', 'HEAD']] = df[['ID', 'HEAD']].apply(pd.to_numeric)
         return df
